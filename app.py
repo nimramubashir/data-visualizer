@@ -2,8 +2,9 @@ import streamlit as st
 import pandas as pd
 import numpy as np
 from pandas.api.types import is_numeric_dtype
+from pandas.api.types import is_string_dtype
 
-st.title('CSV File Uploader and Viewer')
+st.title('CSV Data Visualizer')
 st.write('Upload your CSV files and visualize your data using our amazing site!')
 
 uploaded_file = st.sidebar.file_uploader("Choose a file", type ='csv')
@@ -16,26 +17,23 @@ if uploaded_file:
     col1, col2 = st.columns(2, gap="medium")
 
     with col1:
-        st.header("Full Data")
+        st.header("Data")
         st.write(df)
-    
-        data = np.random.randn(10, 1)
 
-        col1.subheader("A wide column with a chart")
-        col1.line_chart(data)
     with col2:
-        st.subheader("Line Graph 1")
-        draw1 = st.selectbox('Select the first column', df.columns)
-        if is_numeric_dtype(df[draw1]):
-            col2.line_chart(df[draw1])
-        else:
-            st.write ("Please choose a numerical column.")
+        st.subheader("Draw Line Graph")
+        draw1 = st.selectbox('Select first column', df.columns, index = 0)
+        draw2 = st.selectbox('Select second column', df.columns, index = 1)
 
-        draw2 = st.selectbox('Select the second column', df.columns)
-        if is_numeric_dtype(df[draw2]):
-            data = df[draw2]
-            col2.line_chart(data)
+        if is_numeric_dtype(df[draw1]) and is_numeric_dtype(df[draw2]):
+            plot_df = df[[draw1, draw2]]
+            plot_df.set_index(draw1, inplace=True)
+            st.line_chart(plot_df)
+        elif is_string_dtype(df[draw1]) and is_numeric_dtype(df[draw2]):
+            st.write ("The first column is not a numerical column.")
+        elif is_numeric_dtype(df[draw1]) and is_string_dtype(df[draw2]):
+            st.write ("The second column is not a numerical column.")
         else:
-            st.write ("Please choose a numerical column.")
+            st.write ("Please select numerical columns.")
 else:
     st.write("Please upload a file")
